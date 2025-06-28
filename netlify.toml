@@ -1,3 +1,4 @@
 [build]
-  publish = "build"
+  base = "Safevoice-ai"
   command = "npm run build"
+  publish = "Safevoice-ai/build"
