@@ -1,0 +1,28 @@
+{
+    "audio_file": "sample_audio.wav",
+    "transcript": "You're always wrong. Nobody cares about you.",
+    "analysis": [
+        {
+            "sentence": "You're always wrong.",
+            "abuse": {
+                "label": "toxic",
+                "confidence": 0.003
+            },
+            "emotion": {
+                "label": "anger",
+                "confidence": 0.584
+            }
+        },
+        {
+            "sentence": "Nobody cares about you.",
+            "abuse": {
+                "label": "toxic",
+                "confidence": 0.304
+            },
+            "emotion": {
+                "label": "anger",
+                "confidence": 0.459
+            }
+        }
+    ]
+}

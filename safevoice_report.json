@@ -1,0 +1,11 @@
+{
+    "transcript": " You're always wrong. Nobody cares about you.",
+    "toxicity": {
+        "label": "toxic",
+        "confidence": 0.145
+    },
+    "emotion": {
+        "label": "anger",
+        "confidence": 0.637
+    }
+}
