@@ -1,210 +1,286 @@
-import React, { useState } from "react";
-import { ReactMic } from "react-mic";
+// src/App.js
+import React, { useState, useEffect } from "react";
+import { AudioRecorder } from "react-audio-voice-recorder";   // already working
 import axios from "axios";
-import "./App.css";
+import "chart.js/auto";                                       // make sure chart.js is installed
+import "./index.css";                                         // Tailwind (directives live here)
 
-function App() {
-  const [audioFile, setAudioFile] = useState(null);
-  const [recording, setRecording] = useState(false);
-  const [blobURL, setBlobURL] = useState("");
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
+/* ────────────────────────────────────────────
+   SafeVoice – Dashboard-style React frontend
+────────────────────────────────────────────── */
+export default function App() {
+  /* ••• STATE ••• */
+  const [audioFile, setAudioFile]      = useState(null);
+  const [blobURL,   setBlobURL]        = useState("");
+  const [recording, setRecording]      = useState(false);
+  const [analyzing, setAnalyzing]      = useState(false);
+  const [result,    setResult]         = useState(null);
 
-  const handleFileChange = (e) => {
+  /* ••• HELPERS ••• */
+  const handleFile = (e) => {
     setAudioFile(e.target.files[0]);
     setBlobURL("");
-    setAnalysisResult(null);
+    setResult(null);
   };
 
-  const startRecording = () => {
-    setRecording(true);
-    setAnalysisResult(null);
+  const onStop = (blob) => {
+    const file = new File([blob], "recorded_audio.wav", { type: "audio/wav" });
+    setAudioFile(file);
+    setBlobURL(URL.createObjectURL(blob));
   };
 
-  const stopRecording = () => {
-    setRecording(false);
-  };
-
-  const onStop = (recordedBlob) => {
-    setAudioFile(new File([recordedBlob.blob], "recorded_audio.wav", { type: "audio/wav" }));
-    setBlobURL(recordedBlob.blobURL);
-  };
-
-  const handleAnalyze = async () => {
+  const analyze = async () => {
     if (!audioFile) return;
     setAnalyzing(true);
-    const formData = new FormData();
-    formData.append("audio", audioFile);
-
+    const fd = new FormData();
+    fd.append("audio", audioFile);
     try {
-      const response = await axios.post("http://127.0.0.1:5000/analyze", formData, {
+      const { data } = await axios.post("http://127.0.0.1:5000/analyze", fd, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setAnalysisResult(response.data);
-    } catch (error) {
-      console.error("Analysis error:", error);
+      setResult(data);
+    } catch (err) {
+      console.error(err);
+      alert("❌ Analysis failed - check backend.");
     } finally {
       setAnalyzing(false);
     }
   };
 
-  const renderChart = () => {
-    if (!analysisResult?.emotions?.all) return null;
+  /* ••• DRAW PIE ONCE RESULT ARRIVES ••• */
+  useEffect(() => {
+    if (!result?.emotions?.all) return;
+    const { all } = result.emotions;
+    const labels = Object.keys(all);
+    const values = Object.values(all);
+    const ctx    = document.getElementById("pie");
+    if (!ctx) return;
+    // eslint-disable-next-line no-undef
+    new Chart(ctx, {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [{ data: values, backgroundColor: [
+          "#14b8a6","#0ea5e9","#f97316","#f43f5e","#a855f7","#eab308","#64748b"
+        ]}],
+      },
+      options: { plugins: { legend: { position: "right", labels:{color:"#cbd5e1"} } } },
+    });
+  }, [result]);
 
-    const chartData = analysisResult.emotions.all;
-    const labels = Object.keys(chartData);
-    const values = Object.values(chartData);
-
-    setTimeout(() => {
-      const ctx = document.getElementById("emotionChart");
-      if (ctx && window.Chart) {
-        new window.Chart(ctx, {
-          type: "pie",
-          data: {
-            labels,
-            datasets: [
-              {
-                data: values,
-                backgroundColor: [
-                  "#FF6384",
-                  "#36A2EB",
-                  "#FFCE56",
-                  "#4BC0C0",
-                  "#9966FF",
-                  "#FF9F40",
-                  "#C9CBCF",
-                ],
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "right",
-              },
-            },
-          },
-        });
-      }
-    }, 300);
-
-    return (
-      <div className="chart">
-        <h3>4. Emotion Distribution</h3>
-        <canvas id="emotionChart" width="300" height="300"></canvas>
-      </div>
-    );
-  };
-
+  /* ••• DASHBOARD LAYOUT ••• */
   return (
-    <div className="container">
-      <h1>🎙️ SafeVoice: Abuse & Emotion Detector</h1>
+    <div className="min-h-screen flex bg-gray-900 text-slate-200">
+      {/* ────────── Sidebar ────────── */}
+      <aside className="hidden md:flex flex-col w-60 bg-gray-800/70 border-r border-gray-700">
+        <h1 className="text-2xl font-extrabold text-center py-6 text-teal-400">
+          SafeVoice
+        </h1>
+        <nav className="flex-1 px-4 space-y-2 text-sm">
+          <a href="#input"   className="block py-2 px-3 rounded hover:bg-gray-700">🎙️ Analyze</a>
+          <a href="#results" className="block py-2 px-3 rounded hover:bg-gray-700">📊 Results</a>
+          <a href="#help"    className="block py-2 px-3 rounded hover:bg-gray-700">🆘 Help</a>
+        </nav>
+        <p className="py-4 text-center text-xs text-gray-500">
+          © {new Date().getFullYear()} SafeVoice
+        </p>
+      </aside>
 
-      <div className="upload-section">
-        <input type="file" accept="audio/*" onChange={handleFileChange} />
-        <p>OR</p>
-        <ReactMic
-          record={recording}
-          className="sound-wave"
-          onStop={onStop}
-          strokeColor="#000000"
-          backgroundColor="#f3f3f3"
-        />
-        <button onClick={recording ? stopRecording : startRecording}>
-          {recording ? "Stop Recording" : "Start Recording"}
-        </button>
-      </div>
+      {/* ────────── Main content ────────── */}
+      <main className="flex-1 px-4 md:px-8 lg:px-12 py-10 space-y-10">
+        {/* INPUT CARD */}
+        <section id="input" className="bg-gray-800/60 rounded-lg p-6 shadow">
+          <h2 className="text-xl font-semibold text-teal-300 mb-4">
+            1️⃣ Provide Audio
+          </h2>
 
-      <button onClick={handleAnalyze} disabled={!audioFile || analyzing}>
-        {analyzing ? "Analyzing..." : "Analyze Audio"}
-      </button>
+          {/* Upload & Recorder grid */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* FILE UPLOAD */}
+            <div>
+              <label className="block mb-2 text-sm">Upload a file</label>
+              <input type="file" accept="audio/*" onChange={handleFile} />
+            </div>
 
-      {blobURL && (
-        <div className="player">
-          <p>▶️ Playback:</p>
-          <audio src={blobURL} controls />
-        </div>
-      )}
-
-      {analysisResult && (
-        <div className="results">
-          <h2>1. Overall Emotion: {analysisResult.emotions.top.label}</h2>
-          <p>Score: {(analysisResult.emotions.top.score * 100).toFixed(1)}%</p>
-
-          <h2>2. Overall Abuse: {analysisResult.abuse.label}</h2>
-          <p>Score: {(analysisResult.abuse.score * 100).toFixed(1)}%</p>
-
-          <h2>3. Transcription</h2>
-          <p>{analysisResult.transcript}</p>
-
-          {renderChart()}
-
-          <h2>5. Sentence-Level Analysis</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Sentence</th>
-                <th>Abuse</th>
-                <th>Top 3 Emotions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {analysisResult.detailed_analysis.map((s, i) => (
-                <tr key={i}>
-                  <td>{s.sentence}</td>
-                  <td>
-                    {s.abuse.label} ({(s.abuse.score * 100).toFixed(1)}%)
-                  </td>
-                  <td>
-                    {s.emotions
-                      .slice(0, 3)
-                      .map((e) => `${e.label} (${(e.score * 100).toFixed(1)}%)`)
-                      .join(", ")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {/* 6. Emergency Contact Numbers */}
-          <div className="section">
-            <h2>6. Do You Need Help? Emergency Contact Numbers</h2>
-            <ul>
-              <li><strong>📞 USA:</strong> <a href="tel:911">911</a> (Emergency Services)</li>
-              <li><strong>📞 India:</strong> <a href="tel:100">100</a> (Police), <a href="tel:1091">1091</a> (Women’s Helpline)</li>
-              <li><strong>📞 UK:</strong> <a href="tel:999">999</a> (Emergency Services)</li>
-              <li><strong>📞 Canada:</strong> <a href="tel:911">911</a> (Emergency Services)</li>
-              <li><strong>📞 Australia:</strong> <a href="tel:000">000</a> (Emergency Services)</li>
-              <li><strong>📞 Germany:</strong> <a href="tel:112">112</a> (Ambulance), <a href="tel:110">110</a> (Police)</li>
-              <li><strong>📞 France:</strong> <a href="tel:112">112</a> (EU Emergency), <a href="tel:15">15</a> (Ambulance)</li>
-              <li><strong>📞 Brazil:</strong> <a href="tel:190">190</a> (Police), <a href="tel:192">192</a> (Ambulance)</li>
-              <li><strong>📞 South Africa:</strong> <a href="tel:10111">10111</a> (Police), <a href="tel:10177">10177</a> (Ambulance)</li>
-              <li><strong>📞 Japan:</strong> <a href="tel:110">110</a> (Police), <a href="tel:119">119</a> (Fire/Ambulance)</li>
-            </ul>
+            {/* RECORDER */}
+            <div className="flex flex-col items-center">
+              <AudioRecorder
+                onRecordingComplete={onStop}
+                audioTrackConstraints={{ noiseSuppression: true, echoCancellation: true }}
+                showVisualizer
+                downloadOnSavePress={false}
+                downloadFileExtension="wav"
+                className="w-full"
+              />
+            </div>
           </div>
 
-          {/* 7. Email Support Contacts */}
-          <div className="section">
-            <h2>7. Email Support Contacts</h2>
-            <ul>
-              <li><strong>📧 USA:</strong> <a href="mailto:support@usahelpline.org?subject=Help Needed&body=Please find attached the recorded audio for support.">support@usahelpline.org</a></li>
-              <li><strong>📧 India:</strong> <a href="mailto:support@indiahelp.in?subject=Assistance Request&body=Audio report attached for review.">support@indiahelp.in</a></li>
-              <li><strong>📧 UK:</strong> <a href="mailto:help@ukrescue.org?subject=Urgent Help&body=Attached audio may contain abusive content.">help@ukrescue.org</a></li>
-              <li><strong>📧 Canada:</strong> <a href="mailto:support@canadaaid.ca?subject=Support Request&body=Please check the attached voice note.">support@canadaaid.ca</a></li>
-              <li><strong>📧 Australia:</strong> <a href="mailto:help@ausassist.au?subject=Immediate Support&body=Attached audio contains critical information.">help@ausassist.au</a></li>
-              <li><strong>📧 Germany:</strong> <a href="mailto:support@germanysafety.de?subject=Support Request&body=Need help regarding the attached audio report.">support@germanysafety.de</a></li>
-              <li><strong>📧 France:</strong> <a href="mailto:help@frsos.fr?subject=Aide Requise&body=Merci de vérifier l’audio ci-joint.">help@frsos.fr</a></li>
-              <li><strong>📧 Brazil:</strong> <a href="mailto:support@brsafe.org.br?subject=Urgência&body=O áudio gravado está anexado para avaliação.">support@brsafe.org.br</a></li>
-              <li><strong>📧 South Africa:</strong> <a href="mailto:help@sahelp.co.za?subject=Emergency Support&body=Please review the audio attached.">help@sahelp.co.za</a></li>
-              <li><strong>📧 Japan:</strong> <a href="mailto:support@jphelpline.jp?subject=相談&body=録音された音声を添付しています。ご確認ください。">support@jphelpline.jp</a></li>
-            </ul>
-            <p><em>📎 You can manually attach the recorded audio file (<code>recorded_audio.wav</code>) while sending the email.</em></p>
-          </div>
-        </div>
-      )}
+          {/* PLAYBACK */}
+          {blobURL && (
+            <div className="mt-4">
+              <p className="text-xs text-gray-400 mb-1">Playback</p>
+              <audio src={blobURL} controls className="w-full" />
+            </div>
+          )}
+
+          {/* ANALYZE BTN */}
+          <button
+            onClick={analyze}
+            disabled={!audioFile || analyzing}
+            className="mt-6 w-full bg-teal-600 hover:bg-teal-700 py-2 rounded transition disabled:bg-gray-600"
+          >
+            {analyzing ? "⚙️ Analyzing…" : "🚀 Analyze Audio"}
+          </button>
+        </section>
+
+        {/* RESULTS */}
+        {result && (
+          <>
+            {/* SUMMARY CARDS */}
+            <section
+              id="results"
+              className="grid md:grid-cols-2 gap-6"
+            >
+              <Card
+                title="2️⃣ Overall Emotion"
+                value={result.emotions.top.label}
+                score={result.emotions.top.score}
+              />
+              <Card
+                title="3️⃣ Overall Abuse"
+                value={result.abuse.label}
+                score={result.abuse.score}
+              />
+            </section>
+
+            {/* TRANSCRIPT & PIE */}
+            <section className="grid md:grid-cols-2 gap-6">
+              <div className="bg-gray-800/60 rounded-lg p-6 shadow overflow-y-auto">
+                <h3 className="text-teal-300 font-semibold mb-3">4️⃣ Transcript</h3>
+                <p className="whitespace-pre-wrap leading-relaxed text-sm">
+                  {result.transcript}
+                </p>
+              </div>
+
+              <div className="bg-gray-800/60 rounded-lg p-6 shadow flex flex-col items-center">
+                <h3 className="text-teal-300 font-semibold mb-3">
+                  Emotion Distribution
+                </h3>
+                <canvas id="pie" className="max-w-[260px]" />
+              </div>
+            </section>
+
+            {/* SENTENCE TABLE */}
+            <section className="bg-gray-800/60 rounded-lg p-6 shadow overflow-x-auto">
+              <h3 className="text-teal-300 font-semibold mb-4">
+                5️⃣ Sentence-level Details
+              </h3>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-700 text-left">
+                    <th className="p-2">Sentence</th>
+                    <th className="p-2">Abuse</th>
+                    <th className="p-2">Top 3 Emotions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.detailed_analysis.map((row, i) => (
+                    <tr key={i} className="border-b border-gray-700">
+                      <td className="p-2">{row.sentence}</td>
+                      <td className="p-2">
+                        {row.abuse.label} ({(row.abuse.score * 100).toFixed(1)}%)
+                      </td>
+                      <td className="p-2">
+                        {row.emotions
+                          .slice(0, 3)
+                          .map(
+                            (e) => `${e.label} (${(e.score * 100).toFixed(1)}%)`
+                          )
+                          .join(", ")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+
+            {/* HELP SECTION */}
+            <section id="help" className="grid md:grid-cols-2 gap-6">
+              <HelpCard
+                title="6️⃣ Emergency Numbers"
+                rows={[
+                  ["USA", "911"],
+                  ["India", "100 / 1091"],
+                  ["UK", "999"],
+                  ["Canada", "911"],
+                  ["Australia", "000"],
+                  ["Germany", "112 / 110"],
+                  ["France", "112 / 15"],
+                  ["Brazil", "190 / 192"],
+                  ["South Africa", "10111 / 10177"],
+                  ["Japan", "110 / 119"],
+                ]}
+                isPhone
+              />
+
+              <HelpCard
+                title="7️⃣ Email Support"
+                rows={[
+                  ["USA", "support@usahelpline.org"],
+                  ["India", "support@indiahelp.in"],
+                  ["UK", "help@ukrescue.org"],
+                  ["Canada", "support@canadaaid.ca"],
+                  ["Australia", "help@ausassist.au"],
+                  ["Germany", "support@germanysafety.de"],
+                  ["France", "help@frsos.fr"],
+                  ["Brazil", "support@brsafe.org.br"],
+                  ["South Africa", "help@sahelp.co.za"],
+                  ["Japan", "support@jphelpline.jp"],
+                ]}
+              />
+            </section>
+          </>
+        )}
+      </main>
     </div>
   );
 }
 
-export default App;
+/* ────────── Small reusable components ────────── */
+function Card({ title, value, score }) {
+  return (
+    <div className="bg-gray-800/60 rounded-lg p-6 shadow">
+      <h3 className="text-teal-300 font-semibold mb-2">{title}</h3>
+      <p className="text-2xl font-bold">{value}</p>
+      <p className="text-gray-400 text-sm">
+        Score: {(score * 100).toFixed(1)}%
+      </p>
+    </div>
+  );
+}
+
+function HelpCard({ title, rows, isPhone = false }) {
+  return (
+    <div className="bg-gray-800/60 rounded-lg p-6 shadow">
+      <h3 className="text-teal-300 font-semibold mb-3">{title}</h3>
+      <ul className="space-y-1 text-sm leading-6">
+        {rows.map(([label, val]) => (
+          <li key={label}>
+            {isPhone ? "📞" : "📧"} {label}:{" "}
+            <a
+              href={isPhone ? `tel:${val.replace(/\D/g, "")}` : `mailto:${val}`}
+              className="text-teal-400"
+            >
+              {val}
+            </a>
+          </li>
+        ))}
+      </ul>
+      {!isPhone && (
+        <p className="mt-2 text-xs text-gray-400">
+          Attach <code>recorded_audio.wav</code> when sending.
+        </p>
+      )}
+    </div>
+  );
+}
