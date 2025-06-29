@@ -1,11 +1,12 @@
 # SafeVoice AI 🔊🛡️  
 Detect emotional and verbal abuse for women's safety using AI & NLP
 
-[Live Demo 💻](https://safevoiceai.netlify.app/) | [GitHub Repo 🔗](https://github.com/Ananyanagaraj11/safevoice-ai)
+Live Demo : (https://safevoiceai.netlify.app/) |
+GitHub Repo : https://github.com/Ananyanagaraj11/safevoice-ai
 
 ---
 
-## 🧠 About SafeVoice
+## About SafeVoice
 
 **SafeVoice AI** is a web-based application designed to help promote **women’s safety and mental well-being**. It captures and analyzes voice conversations to detect signs of **emotional distress**, **verbal abuse**, and **toxic behavior** using artificial intelligence.
 
@@ -13,20 +14,20 @@ The system uses **Whisper** for speech-to-text and a transformer-based NLP model
 
 ---
 
-## 🚨 Why SafeVoice Matters
+## Why SafeVoice Matters!!
 
 Many women face **invisible abuse**—emotional or verbal—that goes unreported. SafeVoice AI enables users to:
 
 - Detect **toxic, manipulative, or threatening** language  
 - Recognize emotions like **fear, sadness, and anger**
 - Document abuse via **automated PDF reports**
-- Seek help with **emergency contact suggestions**
+- Seek help with **emergency contact and email support suggestions**
 
 ---
 
-## ✨ Features
+## Features
 
-- 🎙️ Upload or record voice clips (MP3/WAV)
+- 🎙️ Record or Upload voice clips (MP3/WAV)
 - 🔁 Transcription with **OpenAI Whisper**
 - ⚠️ Abuse detection and **emotion classification**
 - 📊 View analysis via **charts** and **emotion tables**
@@ -47,9 +48,22 @@ Many women face **invisible abuse**—emotional or verbal—that goes unreported
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Clone the repository
-```bash
 git clone https://github.com/Ananyanagaraj11/safevoice-ai.git
-cd safevoice-ai
+cd safevoice-ai 
+
+### 2. Install dependencies
+Backend (Python):
+pip install -r requirements.txt
+
+Frontend (React): [it is in Safevoice-ai folder]
+npm install
+
+###3. Start the app
+Start backend server:
+python app.py
+
+###Start frontend (React):
+npm start
