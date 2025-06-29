@@ -61,9 +61,9 @@ pip install -r requirements.txt
 Frontend (React): [it is in Safevoice-ai folder]
 npm install
 
-###3. Start the app
+### 3. Start the app
 Start backend server:
 python app.py
 
-###Start frontend (React):
+Start frontend (React):
 npm start
