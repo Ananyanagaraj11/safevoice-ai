@@ -67,3 +67,11 @@ python app.py
 
 Start frontend (React):
 npm start
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
+
