@@ -1,23 +1,55 @@
-# SafeVoice AI
-Detect emotional and verbal abuse in voice recordings using AI and NLP.
+# SafeVoice AI 🔊🛡️  
+Detect emotional and verbal abuse for women's safety using AI & NLP
 
-SAFEVOICE is an AI application that detects emotional and verbal abuse in voice conversations. It converts speech to text using Whisper and analyzes the content using a transformer-based NLP model to identify toxic language, emotional tone, and risk levels. All processing is privacy-respecting and runs locally.
+[Live Demo 💻](https://safevoiceai.netlify.app/) | [GitHub Repo 🔗](https://github.com/Ananyanagaraj11/safevoice-ai)
 
-## Features
-- Upload voice recordings (WAV/MP3)
-- Convert audio to text using Whisper
-- Detect abusive, manipulative, or threatening content
-- Display results with risk score and emotional indicators
-- Visual heatmap of toxicity over time 
+---
 
-## Tech Stack
-- Python
-- Whisper (speech-to-text)
-- Hugging Face Transformers (NLP)
-- Streamlit (web interface)
-- Matplotlib / Plotly (visualization)
+## 🧠 About SafeVoice
 
-## Getting Started 
-1. Clone the repo  
-2. Install dependencies  
-3. Run the Streamlit app  
+**SafeVoice AI** is a web-based application designed to help promote **women’s safety and mental well-being**. It captures and analyzes voice conversations to detect signs of **emotional distress**, **verbal abuse**, and **toxic behavior** using artificial intelligence.
+
+The system uses **Whisper** for speech-to-text and a transformer-based NLP model to extract **emotions** and **abuse patterns** — all processed **locally** with full respect for user privacy.
+
+---
+
+## 🚨 Why SafeVoice Matters
+
+Many women face **invisible abuse**—emotional or verbal—that goes unreported. SafeVoice AI enables users to:
+
+- Detect **toxic, manipulative, or threatening** language  
+- Recognize emotions like **fear, sadness, and anger**
+- Document abuse via **automated PDF reports**
+- Seek help with **emergency contact suggestions**
+
+---
+
+## ✨ Features
+
+- 🎙️ Upload or record voice clips (MP3/WAV)
+- 🔁 Transcription with **OpenAI Whisper**
+- ⚠️ Abuse detection and **emotion classification**
+- 📊 View analysis via **charts** and **emotion tables**
+- 📝 Export **PDF safety reports**
+- 📱 Optimized for web and mobile with **React**
+- 🔒 All analysis runs locally — no data uploaded
+
+---
+
+## 🛠️ Tech Stack
+
+- **React (Frontend UI)**
+- **Python (Flask API Backend)**
+- **Whisper** – Speech-to-text
+- **Hugging Face Transformers** – NLP abuse/emotion detection
+- **ReportLab** – PDF generation
+- **Chart.js / HTML Canvas** – Emotion visualizations
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/Ananyanagaraj11/safevoice-ai.git
+cd safevoice-ai
